@@ -361,7 +361,20 @@ public class GCMIntentService extends GcmListenerService implements PushConstant
          */
         createActions(extras, mBuilder, resources, packageName, notId);
 
-        mNotificationManager.notify(appName, notId, mBuilder.build());
+        Notification notification = mBuilder.build();
+
+        try {
+            JSONObject payload = new JSONObject(extras.getString("payload"));
+            if (payload.has("config")) {
+                if (payload.getJSONObject("config").getBoolean("insistent")) {
+                    notification.flags |= Notification.FLAG_INSISTENT;
+                }
+            }
+
+        } catch (JSONException ignored) { }
+
+
+        mNotificationManager.notify(appName, notId, notification);
     }
 
     private void updateIntent(Intent intent, String callback, Bundle extras, boolean foreground, int notId) {
